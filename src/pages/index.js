@@ -22,6 +22,7 @@ export default function Home({ posts }) {
       {posts.map((post) => {
         return (
           <Card
+            key={post.filename}
             metadata={post.metaData}
             name={post.filename.replace(".mdx", "")}
           />
