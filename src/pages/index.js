@@ -1,6 +1,12 @@
+import { Box, Heading, Text } from "@chakra-ui/react";
 import Head from "next/head";
+import { promises as fs } from "fs";
+import path from "path";
+import matter from "gray-matter";
+import Card from "@/components/Card";
 
-export default function Home() {
+export default function Home({ posts }) {
+  console.log(posts);
   return (
     <>
       <Head>
@@ -9,7 +15,39 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main></main>
+      <Box as="main">
+        <Heading>The man in the suit</Heading>
+        <Text>The man in the suit is an anomalous entity</Text>
+      </Box>
+      {posts.map((post) => {
+        return (
+          <Card
+            metadata={post.metaData}
+            name={post.filename.replace(".mdx", "")}
+          />
+        );
+      })}
     </>
   );
+}
+
+export async function getStaticProps() {
+  const postsDirectory = path.join(process.cwd(), "src/pages/posts");
+  const filenames = await fs.readdir(postsDirectory);
+  const posts = await Promise.all(
+    filenames.map(async (filename) => {
+      const filepath = path.join(postsDirectory, filename);
+      const content = await fs.readFile(filepath, "utf8");
+      const data = matter(content);
+      return {
+        filename,
+        metaData: data.data,
+      };
+    })
+  );
+  return {
+    props: {
+      posts,
+    },
+  };
 }
